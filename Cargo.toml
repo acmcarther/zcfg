@@ -1,0 +1,10 @@
+[package]
+name = "ctors"
+version = "0.1.0"
+authors = ["Alex McArther <acmcarther@gmail.com>"]
+
+[dependencies.third_crate]
+path = "./third_crate"
+
+[dependencies.gflags]
+path = "./gflags"

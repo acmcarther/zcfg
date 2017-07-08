@@ -1,0 +1,8 @@
+[package]
+name = "other_crate"
+version = "0.1.0"
+authors = ["Alex McArther <acmcarther@gmail.com>"]
+
+[dependencies]
+lazy_static = "*"
+libc = "*"

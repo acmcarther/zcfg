@@ -1,0 +1,8 @@
+[package]
+name = "gflags"
+version = "0.1.0"
+authors = ["Alex McArther <acmcarther@gmail.com>"]
+
+[dependencies]
+lazy_static = "*"
+libc = "*"
