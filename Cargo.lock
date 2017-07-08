@@ -3,6 +3,7 @@ name = "ctors"
 version = "0.1.0"
 dependencies = [
  "gflags 0.1.0",
+ "other_crate 0.1.0",
  "third_crate 0.1.0",
 ]
 
@@ -23,6 +24,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "libc"
 version = "0.2.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "other_crate"
+version = "0.1.0"
+dependencies = [
+ "gflags 0.1.0",
+ "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "third_crate"

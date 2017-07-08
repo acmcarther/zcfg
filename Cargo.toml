@@ -6,5 +6,8 @@ authors = ["Alex McArther <acmcarther@gmail.com>"]
 [dependencies.third_crate]
 path = "./third_crate"
 
+[dependencies.other_crate]
+path = "./other_crate"
+
 [dependencies.gflags]
 path = "./gflags"
