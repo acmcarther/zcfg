@@ -5,18 +5,22 @@ extern crate gflags;
 
 
 fn main() {
+  println!("-------- First init values");
   print_flags();
 
   other_crate::flags::some_flag::FLAG.set_for_testing("some_flag got overridden".to_owned());
 
+  println!("-------- Values after an override");
   print_flags();
 
   gflags::populate_flags();
 
+  println!("-------- Values after populate_flags()");
   print_flags();
 
   gflags::populate_flags();
 
+  println!("-------- Values after populate_flags() again");
   print_flags();
 }
 

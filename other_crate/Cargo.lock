@@ -2,6 +2,14 @@
 name = "other_crate"
 version = "0.1.0"
 dependencies = [
+ "gflags 0.1.0",
+ "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "gflags"
+version = "0.1.0"
+dependencies = [
  "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.26 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
