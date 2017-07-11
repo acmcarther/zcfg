@@ -10,13 +10,19 @@ use std::ops::Deref;
 
 #[macro_export]
 macro_rules! define_flag {
-  ($name: ident) => {
+  (pub $name:ident : $t:ty) => {
+    define_flag!(pub $name: $t = None);
+  };
+  ($name:ident: $t:ty) => {
+    define_flag!($name: $t = None);
+  };
+  (pub $name:ident : $t:ty = $value:expr) => {
     pub mod $name {
-      _flag_boilerplate!($name, gflags::FlagInner::new(stringify!($name).to_owned(), None));
+      _flag_boilerplate!($name, gflags::FlagInner::new(stringify!($name).to_owned(), $value));
     }
   };
-  ($name: ident, $value: expr) => {
-    pub mod $name {
+  ($name:ident : $t:ty = $value:expr) => {
+    mod $name {
       _flag_boilerplate!($name, gflags::FlagInner::new(stringify!($name).to_owned(), $value));
     }
   }
@@ -29,6 +35,7 @@ macro_rules! _flag_boilerplate {
     use std::sync::Arc;
     use std::sync::Mutex;
     use gflags;
+
     lazy_static! {
       pub static ref FLAG: gflags::FlagRef = {
         gflags::FlagRef::new(&_FLAG_INNER)
@@ -60,6 +67,17 @@ lazy_static! {
   pub static ref STATIC_FLAG_INIT_FNS: Mutex<Vec<fn(&mut Vec<Arc<Mutex<FlagInner>>>)>> = {
     Mutex::new(Vec::new())
   };
+}
+
+pub enum FlagContents {
+  String(String),
+  Bool(bool),
+  U32(u32),
+  U64(u64),
+  I32(i32),
+  I64(i64),
+  F32(f32),
+  F64(f64),
 }
 
 pub struct FlagRef {

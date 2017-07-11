@@ -6,6 +6,6 @@ extern crate gflags;
 extern crate lazy_static;
 
 pub mod flags {
-  define_flag!(third_flag, Some("third_flag here".to_owned()));
-  define_flag!(another_flag, Some("another flag right here".to_owned()));
+  define_flag!(pub third_flag: String = Some("third_flag here".to_owned()));
+  define_flag!(pub another_flag: String = Some("another flag right here".to_owned()));
 }
