@@ -1,5 +1,5 @@
 [root]
-name = "ctors"
+name = "flag_experiments"
 version = "0.1.0"
 dependencies = [
  "gflags 0.1.0",

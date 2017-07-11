@@ -7,7 +7,7 @@ extern crate gflags;
 fn main() {
   print_flags();
 
-  other_crate::FLAGS::some_flag::set_for_testing("aww sheit".to_owned());
+  other_crate::flags::some_flag::FLAG.set_for_testing("some_flag got overridden".to_owned());
 
   print_flags();
 
@@ -21,8 +21,12 @@ fn main() {
 }
 
 fn print_flags() {
-  let some_flag = other_crate::FLAGS::some_flag::get();
-  let im_very_configurable = third_crate::FLAGS::im_very_configurable::get();
-  println!("Flag {} has default value: {:?}", some_flag.get_name(), some_flag.get_value());
-  println!("Flag {} has default value {:?}", im_very_configurable.get_name(), im_very_configurable.get_value())
+  use other_crate::flags::some_flag::FLAG as FLAG_some_flag;
+  use other_crate::flags::some_other_flag::FLAG as FLAG_some_other_flag;
+  use third_crate::flags::third_flag::FLAG as FLAG_third_flag;
+  use third_crate::flags::another_flag::FLAG as FLAG_another_flag;
+  println!("Flag {} has value: {:?}", FLAG_some_flag.get_name(), FLAG_some_flag.get_value());
+  println!("Flag {} has value: {:?}", FLAG_some_other_flag.get_name(), FLAG_some_other_flag.get_value());
+  println!("Flag {} has value: {:?}", FLAG_third_flag.get_name(), FLAG_third_flag.get_value());
+  println!("Flag {} has value: {:?}", FLAG_another_flag.get_name(), FLAG_another_flag.get_value());
 }

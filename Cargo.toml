@@ -1,5 +1,5 @@
 [package]
-name = "ctors"
+name = "flag_experiments"
 version = "0.1.0"
 authors = ["Alex McArther <acmcarther@gmail.com>"]
 
