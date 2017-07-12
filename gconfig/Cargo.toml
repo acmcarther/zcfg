@@ -1,0 +1,9 @@
+[package]
+name = "gconfig"
+version = "0.1.0"
+authors = ["Alex McArther <acmcarther@gmail.com>"]
+
+[dependencies]
+# This is totally permissive to allow any library to link us.
+# Hopefully the lazy_static api doesn't change a lot!
+lazy_static = "*"

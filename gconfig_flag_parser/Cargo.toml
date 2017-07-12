@@ -1,8 +1,10 @@
 [package]
-name = "gflags"
+name = "gconfig_flag_parser"
 version = "0.1.0"
 authors = ["Alex McArther <acmcarther@gmail.com>"]
 
+[dependencies.gconfig]
+path = "../gconfig"
+
 [dependencies]
-lazy_static = "*"
-libc = "*"
+itertools = "0.6.0"
