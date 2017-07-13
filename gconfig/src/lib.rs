@@ -80,11 +80,11 @@ macro_rules! _define_config_inner {
         })
     }
 
-    fn __inner_get() -> Option<$cfg_type> {
+    fn __inner_get() -> $cfg_type {
       _CONFIG_INNER.deref().read().expect("somebody soiled a config").get()
     }
 
-    fn __inner_set_for_testing(v: Option<$cfg_type>) {
+    fn __inner_set_for_testing(v: $cfg_type) {
       _CONFIG_INNER.deref().write().expect("somebody soiled a config").set_raw(v)
     }
 
@@ -110,11 +110,11 @@ macro_rules! _define_config_inner {
   }
 }
 
-define_pub_cfg!(__gconfig_example_pub_config, String, None,
+define_pub_cfg!(__gconfig_example_pub_config, Option<String>, None,
             "A fake pub example configuration object to demo rustdoc for config objects. The \
             naming convention is completely artificial, and you can choose any convention you'd \
             like. Prefer distinct names that probably won't conflict with other libraries.");
-define_cfg!(__gconfig_example_priv_config, String, None,
+define_cfg!(__gconfig_example_priv_config, Option<String>, None,
             "A fake example configuration object to demo rustdoc for config objects. The \
             naming convention is completely artificial, and you can choose any convention you'd \
             like. Prefer distinct names that probably won't conflict with other libraries.");
@@ -125,9 +125,9 @@ pub struct Config<T: Clone> {
   file_name: String,
   line_number: u32,
   description: &'static str,
-  default_value: Option<T>,
-  _inner_get_value: fn() -> Option<T>,
-  _inner_set_for_testing: fn(Option<T>),
+  default_value: T,
+  _inner_get_value: fn() -> T,
+  _inner_set_for_testing: fn(T),
 }
 
 impl<T: Clone> Config<T> {
@@ -141,8 +141,9 @@ impl<T: Clone> Config<T> {
       file_name: String,
       line_number: u32,
       description: &'static str,
-      default_value: Option<T>,
-      get_value: fn() -> Option<T>, set_for_testing: fn(Option<T>)) 
+      default_value: T,
+      get_value: fn() -> T,
+      set_for_testing: fn(T)) 
       -> Config<T> {
     Config {
       name: name,
@@ -179,7 +180,7 @@ impl<T: Clone> Config<T> {
    * To increase testability you should limit retrieval of config values to some
    * dependency resolution area of your code, rather than within business logic.
    */
-  pub fn get_value(&self) -> Option<T> {
+  pub fn get_value(&self) -> T {
     (self._inner_get_value)()
   }
 
@@ -190,7 +191,7 @@ impl<T: Clone> Config<T> {
    * std::sync::ONCE block, and verify that it has been called.
    */
   pub fn set_for_testing(&self, v: T) {
-    (self._inner_set_for_testing)(Some(v))
+    (self._inner_set_for_testing)(v)
   }
 
   /**
@@ -235,28 +236,60 @@ decl_config_parsable_from_str!(i64);
 decl_config_parsable_from_str!(f32);
 decl_config_parsable_from_str!(f64);
 
+impl <T> ConfigParseable for Option<T> where T:ConfigParseable {
+  type Output = Option<<T as ConfigParseable>::Output>;
+  fn parse_from_str(s: &str) -> Result<Self::Output, ParseErr> {
+    match s {
+      // TODO(acmcarther): Be more comprehensive here
+      "None" | "none" => {
+        Ok(None)
+      }
+      s => {
+        <T as ConfigParseable>::parse_from_str(s).map(|v| Some(v))
+      }
+    }
+  }
+}
+
+// TODO(acmcarther): Consider using a newtype so people can specify different impls for this
+impl <T> ConfigParseable for Vec<T> where T:ConfigParseable {
+  type Output = Vec<<T as ConfigParseable>::Output>;
+  fn parse_from_str(s: &str) -> Result<Self::Output, ParseErr> {
+    let mut results = Vec::new();
+    for element in s.split(',') {
+      let parsed = <T as ConfigParseable>::parse_from_str(element);
+      if parsed.is_err() {
+        return Err(parsed.err().unwrap())
+      } else {
+        results.push(parsed.ok().unwrap())
+      }
+    }
+    return Ok(results)
+  }
+}
+
 /**
  * The inner config value.
  *
  * This value is public to allow access by `define_cfg` macros.
  */
 pub struct __ConfigValue<T: Clone> {
-  value: Option<T>,
+  value: T,
   initialized: bool
 }
 
 impl<T: Clone> __ConfigValue<T> {
-  pub fn new(default: Option<T>) -> __ConfigValue<T> {
+  pub fn new(default: T) -> __ConfigValue<T> {
     __ConfigValue {
       value: default,
       initialized: false
     }
   }
-  pub fn get(&self) -> Option<T> {
+  pub fn get(&self) -> T {
     self.value.clone()
   }
 
-  pub fn set_raw(&mut self, t: Option<T>) {
+  pub fn set_raw(&mut self, t: T) {
     self.value = t;
   }
 
@@ -265,12 +298,13 @@ impl<T: Clone> __ConfigValue<T> {
       return false
     }
 
-    self.set_raw(Some(t));
+    self.set_raw(t);
     self.initialized = true;
     true
   }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum InitErr {
   AlreadyInitOnce,
   FailedToParse(String),
@@ -422,10 +456,10 @@ pub fn populate_configs() -> Result<(), Vec<(String, GlobalInitErr)>> {
 
 #[cfg(test)]
 mod test {
-  define_cfg!(example_1, String, Some("hello".to_owned()), "some example configuration");
-  define_cfg!(example_2, u32, Some(5), "some example_2 configuration");
-  define_pub_cfg!(example_3, String, None, "some example_3 configuration");
-  define_pub_cfg!(example_4, u32, None, "some example_4 configuration");
+  define_cfg!(example_1, String, "hello".to_owned(), "some example configuration");
+  define_cfg!(example_2, u32, 5, "some example_2 configuration");
+  define_pub_cfg!(example_3, Option<String>, None, "some example_3 configuration");
+  define_pub_cfg!(example_4, Option<u32>, None, "some example_4 configuration");
   use self::example_1::VALUE as CONFIG_example_1;
   use self::example_2::VALUE as CONFIG_example_2;
   use self::example_3::VALUE as CONFIG_example_3;

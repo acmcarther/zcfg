@@ -1,0 +1,13 @@
+[package]
+name = "flag_example"
+version = "0.1.0"
+authors = ["Alex McArther <acmcarther@gmail.com>"]
+
+[dependencies]
+lazy_static = "*"
+
+[dependencies.gconfig]
+path = "../gconfig"
+
+[dependencies.gconfig_flag_parser]
+path = "../gconfig_flag_parser"

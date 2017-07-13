@@ -2,9 +2,17 @@ extern crate gconfig;
 extern crate itertools;
 
 use std::env::Args;
+use std::collections::HashMap;
 use itertools::Itertools;
 use gconfig::ConfigMetadata;
+use gconfig::InitErr;
 use gconfig::ConfigInitializer;
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum FlagInitErr {
+  UndefinedArg(String),
+  InitErr(InitErr),
+}
 
 pub struct FlagParser;
 
@@ -13,7 +21,7 @@ impl FlagParser {
     FlagParser
   }
 
-  pub fn parse_from_args<I: Iterator<Item = String>>(&self, args: I) {
+  pub fn parse_from_args<I: Iterator<Item = String>>(&self, args: I) -> Result<(), Vec<FlagInitErr>> {
     let initializers = gconfig::STATIC_CONFIG_INITIALIZERS.read()
       .expect("initializers were poisoned");
 
@@ -99,11 +107,38 @@ impl FlagParser {
       if let Err(e) = arg {
         panic!(e)
       }
-
       captures.push(arg.unwrap());
     }
 
-    println!("{:?}", captures);
+
+    let mut config_name_to_idx = HashMap::new();
+    for (idx, e) in initializers.iter().enumerate() {
+      config_name_to_idx.insert(e.config_name().clone(), idx);
+    }
+
+    let mut set_errs = Vec::new();
+    for capture in captures.into_iter() {
+      let label: &str = &capture.label;
+      if !config_name_to_idx.contains_key(label) {
+        set_errs.push(FlagInitErr::UndefinedArg(capture.label.clone()))
+      } else {
+        let config_idx = config_name_to_idx.get(label).unwrap();
+        let initializer_ref = initializers.get(*config_idx).unwrap();
+        let result = match capture.value {
+          None => initializer_ref.set_statically("True"),
+          Some(ref v) => initializer_ref.set_statically(v)
+        };
+
+        if result.is_err() {
+          set_errs.push(FlagInitErr::InitErr(result.err().unwrap()))
+        }
+      }
+    }
+    if set_errs.is_empty() {
+      Ok(())
+    } else {
+      Err(set_errs)
+    }
   }
 }
 
@@ -117,14 +152,15 @@ enum ArgComponent {
 
 #[derive(Clone,Debug, PartialEq, Eq)]
 struct ArgCapture {
-  label: String,
-  value: Option<String>
+  pub label: String,
+  pub value: Option<String>
 }
 
 fn main() {
   use std::env;
 
-  FlagParser::new().parse_from_args(env::args().skip(1))
+  FlagParser::new().parse_from_args(env::args().skip(1)).unwrap();
+
 }
 
 #[cfg(test)]
