@@ -4,6 +4,10 @@
 extern crate lazy_static;
 
 use std::sync::RwLock;
+use std::ops::Deref;
+use std::convert::From;
+use std::fmt::Debug;
+use std::fmt::Formatter;
 
 #[macro_export]
 macro_rules! define_cfg {
@@ -31,6 +35,7 @@ macro_rules! _define_config_inner {
     use std::sync::Arc;
     use std::sync::RwLock;
     use std::ops::Deref;
+    use std::convert::Into;
 
     lazy_static! {
       /** The accessible static value for this modules flag. */
@@ -40,7 +45,7 @@ macro_rules! _define_config_inner {
           file!().to_owned(),
           line!(),
           $description,
-          $default_value,
+          $default_value.into(),
           __inner_get,
           __inner_set_for_testing
         )
@@ -64,7 +69,7 @@ macro_rules! _define_config_inner {
       };
 
       static ref _CONFIG_INNER: Arc<RwLock<$crate::__ConfigValue<$cfg_type>>> = {
-        Arc::new(RwLock::new($crate::__ConfigValue::new($default_value)))
+        Arc::new(RwLock::new($crate::__ConfigValue::new($default_value.into())))
       };
     }
 
@@ -110,11 +115,11 @@ macro_rules! _define_config_inner {
   }
 }
 
-define_pub_cfg!(__gconfig_example_pub_config, Option<String>, None,
+define_pub_cfg!(__gconfig_example_pub_config, super::NoneableCfg<String>, None,
             "A fake pub example configuration object to demo rustdoc for config objects. The \
             naming convention is completely artificial, and you can choose any convention you'd \
             like. Prefer distinct names that probably won't conflict with other libraries.");
-define_cfg!(__gconfig_example_priv_config, Option<String>, None,
+define_cfg!(__gconfig_example_priv_config, super::NoneableCfg<String>, None,
             "A fake example configuration object to demo rustdoc for config objects. The \
             naming convention is completely artificial, and you can choose any convention you'd \
             like. Prefer distinct names that probably won't conflict with other libraries.");
@@ -236,10 +241,44 @@ decl_config_parsable_from_str!(i64);
 decl_config_parsable_from_str!(f32);
 decl_config_parsable_from_str!(f64);
 
-impl <T> ConfigParseable for Option<T> where T:ConfigParseable {
-  type Output = Option<<T as ConfigParseable>::Output>;
+
+
+#[derive(Clone)]
+pub struct NoneableCfg<T>(pub Option<T>);
+
+impl <T> NoneableCfg<T> {
+  pub fn inner(self) -> Option<T> {
+    let NoneableCfg(inner) = self;
+    inner
+  }
+}
+
+impl <T> Debug for NoneableCfg<T> where T: Debug {
+  fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+    let &NoneableCfg(ref inner) = self;
+    inner.fmt(f)
+  }
+}
+
+impl <T> Deref for NoneableCfg<T> {
+  type Target = Option<T>;
+
+  fn deref(&self) -> &Option<T> {
+    let &NoneableCfg(ref inner) = self;
+    inner
+  }
+}
+
+impl <T> From<Option<T>> for NoneableCfg<T> {
+  fn from(v: Option<T>) -> Self {
+    NoneableCfg(v)
+  }
+}
+
+impl <T> ConfigParseable for NoneableCfg<T> where T:ConfigParseable {
+  type Output = NoneableCfg<<T as ConfigParseable>::Output>;
   fn parse_from_str(s: &str) -> Result<Self::Output, ParseErr> {
-    match s {
+    let opt_res = match s {
       // TODO(acmcarther): Be more comprehensive here
       "None" | "none" => {
         Ok(None)
@@ -247,13 +286,46 @@ impl <T> ConfigParseable for Option<T> where T:ConfigParseable {
       s => {
         <T as ConfigParseable>::parse_from_str(s).map(|v| Some(v))
       }
-    }
+    };
+    opt_res.map(|v| NoneableCfg(v))
+  }
+}
+
+#[derive(Clone)]
+pub struct CommaSeparatedCfgs<T>(pub Vec<T>);
+
+impl <T> CommaSeparatedCfgs<T> {
+  pub fn inner(self) -> Vec<T> {
+    let CommaSeparatedCfgs(inner) = self;
+    inner
+  }
+}
+
+impl <T> Deref for CommaSeparatedCfgs<T> {
+  type Target = Vec<T>;
+
+  fn deref(&self) -> &Vec<T> {
+    let &CommaSeparatedCfgs(ref inner) = self;
+    inner
+  }
+}
+
+impl <T> From<Vec<T>> for CommaSeparatedCfgs<T> {
+  fn from(v: Vec<T>) -> Self {
+    CommaSeparatedCfgs(v)
+  }
+}
+
+impl <T> Debug for CommaSeparatedCfgs<T> where T: Debug {
+  fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+    let &CommaSeparatedCfgs(ref inner) = self;
+    inner.fmt(f)
   }
 }
 
 // TODO(acmcarther): Consider using a newtype so people can specify different impls for this
-impl <T> ConfigParseable for Vec<T> where T:ConfigParseable {
-  type Output = Vec<<T as ConfigParseable>::Output>;
+impl <T> ConfigParseable for CommaSeparatedCfgs<T> where T:ConfigParseable {
+  type Output = CommaSeparatedCfgs<<T as ConfigParseable>::Output>;
   fn parse_from_str(s: &str) -> Result<Self::Output, ParseErr> {
     let mut results = Vec::new();
     for element in s.split(',') {
@@ -264,7 +336,7 @@ impl <T> ConfigParseable for Vec<T> where T:ConfigParseable {
         results.push(parsed.ok().unwrap())
       }
     }
-    return Ok(results)
+    return Ok(CommaSeparatedCfgs(results))
   }
 }
 
@@ -456,16 +528,16 @@ pub fn populate_configs() -> Result<(), Vec<(String, GlobalInitErr)>> {
 
 #[cfg(test)]
 mod test {
+  pub use super::*;
   define_cfg!(example_1, String, "hello".to_owned(), "some example configuration");
-  define_cfg!(example_2, u32, 5, "some example_2 configuration");
-  define_pub_cfg!(example_3, Option<String>, None, "some example_3 configuration");
-  define_pub_cfg!(example_4, Option<u32>, None, "some example_4 configuration");
+  define_cfg!(example_2, u32, 5u32, "some example_2 configuration");
+  define_pub_cfg!(example_3, super::NoneableCfg<String>, None, "some example_3 configuration");
+  define_pub_cfg!(example_4, super::NoneableCfg<u32>, None, "some example_4 configuration");
   use self::example_1::VALUE as CONFIG_example_1;
   use self::example_2::VALUE as CONFIG_example_2;
   use self::example_3::VALUE as CONFIG_example_3;
   use self::example_4::VALUE as CONFIG_example_4;
   use std::sync::Mutex;
-  use super::STATIC_CONFIG_INITIALIZERS;
 
   lazy_static! {
     static ref NO_TEST_PARALLELISM: Mutex<()>= { Mutex::new(()) };
@@ -485,7 +557,7 @@ mod test {
     reset_world();
 
     CONFIG_example_1.set_for_testing("goodbye".to_owned());
-    assert_eq!(CONFIG_example_1.get_value(), Some("goodbye".to_owned()));
+    assert_eq!(CONFIG_example_1.get_value(), "goodbye".to_owned());
   }
 
   #[test]
@@ -496,9 +568,9 @@ mod test {
     reset_world();
 
     CONFIG_example_1.set_for_testing("goodbye".to_owned());
-    assert_eq!(CONFIG_example_1.get_value(), Some("goodbye".to_owned()));
+    assert_eq!(CONFIG_example_1.get_value(), "goodbye".to_owned());
     CONFIG_example_1.reset_for_testing();
-    assert_eq!(CONFIG_example_1.get_value(), Some("hello".to_owned()));
+    assert_eq!(CONFIG_example_1.get_value(), "hello".to_owned());
   }
 
   #[test]
@@ -507,8 +579,8 @@ mod test {
     let l = NO_TEST_PARALLELISM.lock();
     reset_world();
 
-    assert_eq!(CONFIG_example_3.get_value(), None);
-    assert_eq!(CONFIG_example_4.get_value(), None);
+    assert_eq!(CONFIG_example_3.get_value().inner(), None);
+    assert_eq!(CONFIG_example_4.get_value().inner(), None);
   }
 
   #[test]
