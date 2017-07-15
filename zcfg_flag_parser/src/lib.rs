@@ -1,12 +1,10 @@
 extern crate zcfg;
 extern crate itertools;
 
-use std::env::Args;
 use std::collections::HashMap;
 use itertools::Itertools;
 use zcfg::ConfigMetadata;
 use zcfg::InitErr;
-use zcfg::ConfigInitializer;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum FlagInitErr {
@@ -154,21 +152,4 @@ enum ArgComponent {
 struct ArgCapture {
   pub label: String,
   pub value: Option<String>
-}
-
-fn main() {
-  use std::env;
-
-  FlagParser::new().parse_from_args(env::args().skip(1)).unwrap();
-
-}
-
-#[cfg(test)]
-mod tests {
-  use std::env;
-
-  #[test]
-  fn it_works() {
-    panic!(format!("{:?}", env::args().collect::<Vec<_>>()));
-  }
 }

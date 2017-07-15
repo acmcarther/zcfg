@@ -39,7 +39,7 @@ macro_rules! _define_config_inner {
 
     lazy_static! {
       /** The accessible static value for this modules flag. */
-      pub static ref VALUE: $crate::Config<$cfg_type> = {
+      pub static ref CONFIG: $crate::Config<$cfg_type> = {
         $crate::Config::__new_cfg_in_macro_do_not_use_elsewhere(
           stringify!($name).to_owned(),
           file!().to_owned(),
@@ -56,7 +56,7 @@ macro_rules! _define_config_inner {
        *
        * For general use prefer an aggregate initializer that populates all configs in the binary
        * at once.
-       * For testing, prefer `VALUE.set_for_testing`.
+       * For testing, prefer `CONFIG.set_for_testing`.
        */
       pub static ref INITIALIZER: $crate::ConfigInitializer = {
         $crate::ConfigInitializer::__new_init_in_macro_do_not_use_elsewhere(
@@ -533,10 +533,10 @@ mod test {
   define_cfg!(example_2, u32, 5u32, "some example_2 configuration");
   define_pub_cfg!(example_3, super::NoneableCfg<String>, None, "some example_3 configuration");
   define_pub_cfg!(example_4, super::NoneableCfg<u32>, None, "some example_4 configuration");
-  use self::example_1::VALUE as CONFIG_example_1;
-  use self::example_2::VALUE as CONFIG_example_2;
-  use self::example_3::VALUE as CONFIG_example_3;
-  use self::example_4::VALUE as CONFIG_example_4;
+  use self::example_1::CONFIG as CONFIG_example_1;
+  use self::example_2::CONFIG as CONFIG_example_2;
+  use self::example_3::CONFIG as CONFIG_example_3;
+  use self::example_4::CONFIG as CONFIG_example_4;
   use std::sync::Mutex;
 
   lazy_static! {

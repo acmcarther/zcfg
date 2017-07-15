@@ -7,7 +7,6 @@ extern crate zcfg_flag_parser;
 
 use std::env;
 use zcfg::NoneableCfg;
-use zcfg::CommaSeparatedCfgs;
 use zcfg_flag_parser::FlagParser;
 
 define_cfg!(greeting, String, "Hello".to_owned(),
@@ -21,10 +20,10 @@ fn main() {
   let errs = FlagParser::new().parse_from_args(env::args().skip(1));
   assert_eq!(errs, Ok(()));
 
-  let mut greeting = greeting::VALUE.get_value();
-  if let NoneableCfg(Some(greetings)) =  multigreeting::VALUE.get_value() {
+  let mut greeting = greeting::CONFIG.get_value();
+  if let NoneableCfg(Some(greetings)) =  multigreeting::CONFIG.get_value() {
     greeting = format!("[{}]", greetings.join(","));
   }
 
-  println!("{} {}!", greeting, greeting_target::VALUE.get_value());
+  println!("{} {}!", greeting, greeting_target::CONFIG.get_value());
 }
