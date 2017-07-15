@@ -6,8 +6,8 @@ authors = ["Alex McArther <acmcarther@gmail.com>"]
 [dependencies]
 lazy_static = "*"
 
-[dependencies.gconfig]
-path = "../gconfig"
+[dependencies.zcfg]
+path = "../zcfg"
 
-[dependencies.gconfig_flag_parser]
-path = "../gconfig_flag_parser"
+[dependencies.zcfg_flag_parser]
+path = "../zcfg_flag_parser"

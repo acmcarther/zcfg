@@ -115,11 +115,11 @@ macro_rules! _define_config_inner {
   }
 }
 
-define_pub_cfg!(__gconfig_example_pub_config, super::NoneableCfg<String>, None,
+define_pub_cfg!(__zcfg_example_pub_config, super::NoneableCfg<String>, None,
             "A fake pub example configuration object to demo rustdoc for config objects. The \
             naming convention is completely artificial, and you can choose any convention you'd \
             like. Prefer distinct names that probably won't conflict with other libraries.");
-define_cfg!(__gconfig_example_priv_config, super::NoneableCfg<String>, None,
+define_cfg!(__zcfg_example_priv_config, super::NoneableCfg<String>, None,
             "A fake example configuration object to demo rustdoc for config objects. The \
             naming convention is completely artificial, and you can choose any convention you'd \
             like. Prefer distinct names that probably won't conflict with other libraries.");
@@ -598,8 +598,8 @@ mod test {
     static_config_names.sort();
 
     let expected_values = vec![
-      "__gconfig_example_priv_config".to_owned(),
-      "__gconfig_example_pub_config".to_owned(),
+      "__zcfg_example_priv_config".to_owned(),
+      "__zcfg_example_pub_config".to_owned(),
       "example_1".to_owned(),
       "example_2".to_owned(),
       "example_3".to_owned(),

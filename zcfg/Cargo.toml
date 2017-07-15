@@ -1,5 +1,5 @@
 [package]
-name = "gconfig"
+name = "zcfg"
 version = "0.1.0"
 authors = ["Alex McArther <acmcarther@gmail.com>"]
 

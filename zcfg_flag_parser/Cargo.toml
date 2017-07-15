@@ -1,10 +1,10 @@
 [package]
-name = "gconfig_flag_parser"
+name = "zcfg_flag_parser"
 version = "0.1.0"
 authors = ["Alex McArther <acmcarther@gmail.com>"]
 
-[dependencies.gconfig]
-path = "../gconfig"
+[dependencies.zcfg]
+path = "../zcfg"
 
 [dependencies]
 itertools = "0.6.0"

@@ -1,12 +1,12 @@
-extern crate gconfig;
+extern crate zcfg;
 extern crate itertools;
 
 use std::env::Args;
 use std::collections::HashMap;
 use itertools::Itertools;
-use gconfig::ConfigMetadata;
-use gconfig::InitErr;
-use gconfig::ConfigInitializer;
+use zcfg::ConfigMetadata;
+use zcfg::InitErr;
+use zcfg::ConfigInitializer;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum FlagInitErr {
@@ -22,7 +22,7 @@ impl FlagParser {
   }
 
   pub fn parse_from_args<I: Iterator<Item = String>>(&self, args: I) -> Result<(), Vec<FlagInitErr>> {
-    let initializers = gconfig::STATIC_CONFIG_INITIALIZERS.read()
+    let initializers = zcfg::STATIC_CONFIG_INITIALIZERS.read()
       .expect("initializers were poisoned");
 
     let mut initializer_meta_sorted =
