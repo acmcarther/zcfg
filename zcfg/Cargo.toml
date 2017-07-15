@@ -2,7 +2,7 @@
 name = "zcfg"
 version = "0.1.0"
 authors = ["Alex McArther <acmcarther@gmail.com>"]
-readme = "README.md"
+readme = "../README.md"
 repository = "https://github.com/acmcarther/zcfg"
 description = """
 No-frills library and binary configuration via command line or file.
