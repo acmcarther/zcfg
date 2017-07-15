@@ -5,10 +5,10 @@ authors = ["Alex McArther <acmcarther@gmail.com>"]
 readme = "README.md"
 repository = "https://github.com/acmcarther/zcfg"
 description = """
-No frills library configuration
+No-frills library and binary configuration via command line or file.
 """
 license = "Apache-2.0"
-keywords = ["flag" "flags" "parse" "argument" "config"]
+keywords = ["flag", "parse", "argument", "config"]
 
 [dependencies]
 # This is totally permissive to allow any library to link us.
