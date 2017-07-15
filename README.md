@@ -38,9 +38,11 @@ impl Default for NetProtocolClient {
 extern crate zcfg;
 extern crate zcfg_flag_parser;
 
+use zcfg_flag_parser::FlagParser;
+
 fn main() {
   // Parse flags for all linked crates via command line
-  FlagParser::new().parse_from_args(env::args().skip(1)).unwrap()
+  FlagParser::new().parse_from_args(env::args().skip(1)).unwrap();
 }
 ```
 - Make any of your types `configurable`
