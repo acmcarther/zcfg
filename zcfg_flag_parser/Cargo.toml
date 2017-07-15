@@ -13,4 +13,4 @@ Populate all zcfg configured libraries in your binary using command line flags.
 path = "../zcfg"
 
 [dependencies]
-itertools = "0.6.0"
+itertools = "^0.6.0"
