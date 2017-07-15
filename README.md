@@ -57,7 +57,7 @@ impl ConfigParsable for BuildStrategy { ... }
 
 define_cfg!(use_build_strategy, BuildStrategy, BuildStrategy::Local,
             "Defines how the build planner performs compilation. Options are \
-             [Local] or [Distributed(\"some_address\")].")
+             [Local] or [Remote(\"some_address\")].")
 ```
 
 ## Best Practices
