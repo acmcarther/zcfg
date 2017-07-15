@@ -20,7 +20,7 @@ define_pub_cfg!(net_protocol_timeout_ms, u32, 20000,
                 this connection timed out.")
 ```
 - Access the values while initializing your domain objects
-```
+```rust
 struct NetProtocolClient {
   timeout_ms: u32,
 }
@@ -45,6 +45,8 @@ fn main() {
 ```
 - Make any of your types `configurable`
 ``` rust
+use zcfg::ConfigParsable;
+
 enum BuildStrategy {
   Local,
   Remote {
