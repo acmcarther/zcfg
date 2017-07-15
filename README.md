@@ -28,7 +28,7 @@ struct NetProtocolClient {
 impl Default for NetProtocolClient {
   fn default() -> NetProtocolClient {
     NetProtocolClient {
-      timeout_ms: net_protocol_timeout_ms::Config.get_value(),
+      timeout_ms: net_protocol_timeout_ms::CONFIG.get_value(),
     }
   }
 }
