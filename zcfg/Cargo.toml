@@ -13,4 +13,4 @@ keywords = ["flag", "parse", "argument", "config"]
 [dependencies]
 # This is totally permissive to allow any library to link us.
 # Hopefully the lazy_static api doesn't change a lot!
-lazy_static = "*"
+lazy_static = "^0.2"
