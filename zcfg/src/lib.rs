@@ -500,32 +500,6 @@ lazy_static! {
   };
 }
 
-pub enum GlobalInitErr {
-  SharesNameWith{
-    file_name: String,
-    line_number: u32
-  },
-  InitErr(InitErr),
-}
-
-pub fn populate_configs() -> Result<(), Vec<(String, GlobalInitErr)>> {
-  let mut errs = Vec::new();
-
-  // TODO: Detect name conflicts
-  for initializer in STATIC_CONFIG_INITIALIZERS.read().unwrap().iter() {
-    println!("Initializing config [{}] from [{}:{}]", initializer.config_name(), initializer.file(), initializer.line());
-    if let Err(init_err) = initializer.set_statically("TODO") {
-      errs.push((initializer.config_name().to_owned(), GlobalInitErr::InitErr(init_err)))
-    }
-  }
-
-  if errs.is_empty() {
-    Ok(())
-  } else {
-    Err(errs)
-  }
-}
-
 #[cfg(test)]
 mod test {
   pub use super::*;
