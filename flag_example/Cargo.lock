@@ -1,4 +1,9 @@
-[root]
+[[package]]
+name = "either"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "flag_example"
 version = "0.1.0"
 dependencies = [
@@ -6,11 +11,6 @@ dependencies = [
  "zcfg 0.1.0",
  "zcfg_flag_parser 0.1.0",
 ]
-
-[[package]]
-name = "either"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "itertools"

@@ -244,6 +244,7 @@ decl_config_parsable_from_str!(f64);
 
 
 #[derive(Clone)]
+#[deprecated(since="0.2.0", note="please use Option directly")]
 pub struct NoneableCfg<T>(pub Option<T>);
 
 impl <T> NoneableCfg<T> {
@@ -291,7 +292,22 @@ impl <T> ConfigParseable for NoneableCfg<T> where T:ConfigParseable {
   }
 }
 
+impl <T> ConfigParseable for Option<T> where T:ConfigParseable {
+  type Output = Option<<T as ConfigParseable>::Output>;
+  fn parse_from_str(s: &str) -> Result<Self::Output, ParseErr> {
+    match s {
+      // TODO(acmcarther): Be more comprehensive here
+      "None" | "none" => {
+        Ok(None)
+      }
+      s => <T as ConfigParseable>::parse_from_str(s).map(|v| Some(v))
+    }
+  }
+}
+
+
 #[derive(Clone)]
+#[deprecated(since="0.2.0", note="please use Vec directly")]
 pub struct CommaSeparatedCfgs<T>(pub Vec<T>);
 
 impl <T> CommaSeparatedCfgs<T> {
@@ -323,7 +339,6 @@ impl <T> Debug for CommaSeparatedCfgs<T> where T: Debug {
   }
 }
 
-// TODO(acmcarther): Consider using a newtype so people can specify different impls for this
 impl <T> ConfigParseable for CommaSeparatedCfgs<T> where T:ConfigParseable {
   type Output = CommaSeparatedCfgs<<T as ConfigParseable>::Output>;
   fn parse_from_str(s: &str) -> Result<Self::Output, ParseErr> {
@@ -339,6 +354,23 @@ impl <T> ConfigParseable for CommaSeparatedCfgs<T> where T:ConfigParseable {
     return Ok(CommaSeparatedCfgs(results))
   }
 }
+
+impl <T> ConfigParseable for Vec<T> where T:ConfigParseable {
+  type Output = Vec<<T as ConfigParseable>::Output>;
+  fn parse_from_str(s: &str) -> Result<Self::Output, ParseErr> {
+    let mut results = Vec::new();
+    for element in s.split(',') {
+      let parsed = <T as ConfigParseable>::parse_from_str(element);
+      if parsed.is_err() {
+        return Err(parsed.err().unwrap())
+      } else {
+        results.push(parsed.ok().unwrap())
+      }
+    }
+    return Ok(results)
+  }
+}
+
 
 /**
  * The inner config value.
@@ -507,10 +539,14 @@ mod test {
   define_cfg!(example_2, u32, 5u32, "some example_2 configuration");
   define_pub_cfg!(example_3, super::NoneableCfg<String>, None, "some example_3 configuration");
   define_pub_cfg!(example_4, super::NoneableCfg<u32>, None, "some example_4 configuration");
+  define_pub_cfg!(example_5, Option<String>, None, "some example_5 configuration");
+  define_pub_cfg!(example_6, Vec<u32>, Vec::new(), "some example_6 configuration");
   use self::example_1::CONFIG as CONFIG_example_1;
   use self::example_2::CONFIG as CONFIG_example_2;
   use self::example_3::CONFIG as CONFIG_example_3;
   use self::example_4::CONFIG as CONFIG_example_4;
+  use self::example_5::CONFIG as CONFIG_example_5;
+  use self::example_6::CONFIG as CONFIG_example_6;
   use std::sync::Mutex;
 
   lazy_static! {
@@ -558,6 +594,16 @@ mod test {
   }
 
   #[test]
+  fn basic_collections_work() {
+    #[allow(unused_variables)]
+    let l = NO_TEST_PARALLELISM.lock();
+    reset_world();
+
+    assert_eq!(CONFIG_example_5.get_value(), None);
+    assert_eq!(CONFIG_example_6.get_value(), Vec::new());
+  }
+
+  #[test]
   fn global_initializer_contains_all_flags() {
     #[allow(unused_variables)]
     let l = NO_TEST_PARALLELISM.lock();
@@ -577,7 +623,9 @@ mod test {
       "example_1".to_owned(),
       "example_2".to_owned(),
       "example_3".to_owned(),
-      "example_4".to_owned()
+      "example_4".to_owned(),
+      "example_5".to_owned(),
+      "example_6".to_owned(),
     ];
 
     assert_eq!(static_config_names, expected_values);
